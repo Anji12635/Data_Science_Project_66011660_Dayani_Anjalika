@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import ast
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 # -------------------------------
 # Page Config
@@ -8,18 +10,11 @@ import ast
 st.set_page_config(page_title="BERTopic Dashboard", layout="wide")
 
 # -------------------------------
-# Styling (clean UI + spacing fix)
+# Styling
 # -------------------------------
 st.markdown("""
 <style>
-.stApp {
-    background-color: white;
-}
-
-.block-container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
+.stApp { background-color: white; }
 
 .topic-box {
     padding: 20px;
@@ -43,7 +38,7 @@ df = pd.read_csv("top10_topics.csv")
 df = df.sort_values(by="Count", ascending=False).reset_index(drop=True)
 
 # -------------------------------
-# Display Topic Cards
+# Topic Cards
 # -------------------------------
 for i, row in df.iterrows():
     try:
@@ -67,21 +62,35 @@ st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
 
 # -------------------------------
-# Topic Map Section
+# Word Cloud Section
 # -------------------------------
 st.markdown("---")
-st.subheader("🧠 Interactive Topic Map")
+st.subheader("☁️ Topic Word Clouds")
 
-try:
-    with open("topics.html", "r", encoding="utf-8") as f:
-        html = f.read()
+def generate_wordcloud(words):
+    text = " ".join(words)
+    wc = WordCloud(
+        width=400,
+        height=250,
+        background_color="white",
+        colormap="tab10"
+    ).generate(text)
 
-    # ✅ FIXED: full width + large height
-    st.components.v1.html(
-        html,
-        height=1200,
-        scrolling=True
-    )
+    fig, ax = plt.subplots()
+    ax.imshow(wc, interpolation="bilinear")
+    ax.axis("off")
+    return fig
 
-except FileNotFoundError:
-    st.error("⚠️ topics.html not found. Please upload it.")
+# Grid layout (2 columns)
+cols = st.columns(2)
+
+for i, row in df.iterrows():
+    try:
+        words = ast.literal_eval(row["Representation"])
+    except:
+        words = [row["Representation"]]
+
+    with cols[i % 2]:
+        st.markdown(f"### Topic {i+1}")
+        fig = generate_wordcloud(words)
+        st.pyplot(fig)
