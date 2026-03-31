@@ -9,7 +9,7 @@ from bertopic import BERTopic
 st.set_page_config(page_title="BERTopic Dashboard", layout="wide")
 
 # -------------------------------
-# Custom Styling
+# Styling
 # -------------------------------
 st.markdown("""
 <style>
@@ -21,10 +21,6 @@ st.markdown("""
     background-color: #f7f7f7;
     margin-bottom: 15px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-h3 {
-    margin-bottom: 5px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -65,20 +61,28 @@ st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
 
 # -------------------------------
-# Load BERTopic Model (cached)
+# Load BERTopic Model
 # -------------------------------
 @st.cache_resource
 def load_model():
-    return BERTopic.load("my_model")  # ⚠️ change path if needed
+    return BERTopic.load("my_model")  # make sure this folder exists
 
 # -------------------------------
-# BERTopic Visualization
+# Topic Visualization
 # -------------------------------
 st.markdown("---")
 st.subheader("🧠 Interactive Topic Map")
 
-model = load_model()
+try:
+    model = load_model()
 
-if st.button("Show Topic Map"):
-    fig = model.visualize_topics()
-    st.plotly_chart(fig, use_container_width=True)
+    if st.button("Show Topic Map"):
+        fig = model.visualize_topics()
+
+        # ✅ MOST STABLE METHOD (fix blank issue)
+        html = fig.to_html(include_plotlyjs="cdn")
+        st.components.v1.html(html, height=800, scrolling=True)
+
+except Exception as e:
+    st.error("⚠️ Error loading BERTopic model. Check your model path.")
+    st.text(str(e))
