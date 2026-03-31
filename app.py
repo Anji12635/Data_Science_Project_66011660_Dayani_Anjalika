@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import ast
-from bertopic import BERTopic
 
 # -------------------------------
 # Page Config
@@ -61,28 +60,16 @@ st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
 
 # -------------------------------
-# Load BERTopic Model
-# -------------------------------
-@st.cache_resource
-def load_model():
-    return BERTopic.load("my_model")  # make sure this folder exists
-
-# -------------------------------
-# Topic Visualization
+# Topic Map (HTML version)
 # -------------------------------
 st.markdown("---")
 st.subheader("🧠 Interactive Topic Map")
 
 try:
-    model = load_model()
+    with open("topics.html", "r", encoding="utf-8") as f:
+        html = f.read()
 
-    if st.button("Show Topic Map"):
-        fig = model.visualize_topics()
+    st.components.v1.html(html, height=800, scrolling=True)
 
-        # ✅ MOST STABLE METHOD (fix blank issue)
-        html = fig.to_html(include_plotlyjs="cdn")
-        st.components.v1.html(html, height=800, scrolling=True)
-
-except Exception as e:
-    st.error("⚠️ Error loading BERTopic model. Check your model path.")
-    st.text(str(e))
+except FileNotFoundError:
+    st.error("⚠️ topics.html not found. Please upload it.")
