@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import ast
 
-# -------------------------------
-# Page config
-# -------------------------------
 st.set_page_config(page_title="Topic Dashboard", layout="wide")
 
 # -------------------------------
@@ -19,7 +16,6 @@ st.markdown("""
     border-radius: 12px;
     background-color: #f7f7f7;
     margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .review-box {
@@ -32,35 +28,33 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
-# Title
-# -------------------------------
-st.title("📊 Top 10 Topics + Reviews")
+st.title("📊 Topics & Reviews Dashboard")
 
 # -------------------------------
-# Load CSV
+# Load data
 # -------------------------------
 df = pd.read_csv("top10_topics.csv")
 df = df.sort_values(by="Count", ascending=False).reset_index(drop=True)
 
 # -------------------------------
-# Display Topics
+# Display
 # -------------------------------
 for i, row in df.iterrows():
 
-    # Keywords
+    # ✅ Keywords
     try:
         words = ast.literal_eval(row["Representation"])
         keywords = ", ".join(words[:5])
     except:
         keywords = row["Representation"]
 
-    # Representative docs (reviews)
+    # ✅ Reviews
     try:
-        reviews = ast.literal_eval(row["Representative Docs"])
+        reviews = ast.literal_eval(row["Representative_Docs"])
     except:
-        reviews = [row["Representative Docs"]]
+        reviews = [row["Representative_Docs"]]
 
+    # Topic card
     st.markdown(f"""
     <div class="topic-box">
         <h3>Topic {row['Topic']}</h3>
@@ -69,10 +63,10 @@ for i, row in df.iterrows():
     </div>
     """, unsafe_allow_html=True)
 
-    # Show top reviews
+    # Reviews
     st.markdown("**Top Reviews:**")
 
-    for r in reviews[:3]:  # show top 3 reviews
+    for r in reviews[:3]:
         st.markdown(f"""
         <div class="review-box">
             {r}
@@ -80,7 +74,7 @@ for i, row in df.iterrows():
         """, unsafe_allow_html=True)
 
 # -------------------------------
-# Bar chart
+# Chart
 # -------------------------------
 st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
