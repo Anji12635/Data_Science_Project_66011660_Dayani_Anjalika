@@ -8,11 +8,18 @@ import ast
 st.set_page_config(page_title="BERTopic Dashboard", layout="wide")
 
 # -------------------------------
-# Styling
+# Styling (clean UI + spacing fix)
 # -------------------------------
 st.markdown("""
 <style>
-.stApp { background-color: white; }
+.stApp {
+    background-color: white;
+}
+
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
 
 .topic-box {
     padding: 20px;
@@ -36,7 +43,7 @@ df = pd.read_csv("top10_topics.csv")
 df = df.sort_values(by="Count", ascending=False).reset_index(drop=True)
 
 # -------------------------------
-# Display Topics
+# Display Topic Cards
 # -------------------------------
 for i, row in df.iterrows():
     try:
@@ -60,7 +67,7 @@ st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
 
 # -------------------------------
-# Topic Map (HTML version)
+# Topic Map Section
 # -------------------------------
 st.markdown("---")
 st.subheader("🧠 Interactive Topic Map")
@@ -69,7 +76,12 @@ try:
     with open("topics.html", "r", encoding="utf-8") as f:
         html = f.read()
 
-    st.components.v1.html(html, height=800, scrolling=True)
+    # ✅ FIXED: full width + large height
+    st.components.v1.html(
+        html,
+        height=1200,
+        scrolling=True
+    )
 
 except FileNotFoundError:
     st.error("⚠️ topics.html not found. Please upload it.")
