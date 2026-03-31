@@ -1,13 +1,11 @@
 import streamlit as st
 import pandas as pd
 import ast
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 
 # -------------------------------
-# Page Config
+# Page config
 # -------------------------------
-st.set_page_config(page_title="BERTopic Dashboard", layout="wide")
+st.set_page_config(page_title="Topic Dashboard", layout="wide")
 
 # -------------------------------
 # Styling
@@ -20,8 +18,16 @@ st.markdown("""
     padding: 20px;
     border-radius: 12px;
     background-color: #f7f7f7;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.review-box {
+    padding: 10px;
+    border-left: 5px solid #4D96FF;
+    margin-bottom: 10px;
+    background-color: white;
+    border-radius: 8px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -29,7 +35,7 @@ st.markdown("""
 # -------------------------------
 # Title
 # -------------------------------
-st.title("📊 Top 10 BERTopic Topics")
+st.title("📊 Top 10 Topics + Reviews")
 
 # -------------------------------
 # Load CSV
@@ -38,59 +44,43 @@ df = pd.read_csv("top10_topics.csv")
 df = df.sort_values(by="Count", ascending=False).reset_index(drop=True)
 
 # -------------------------------
-# Topic Cards
+# Display Topics
 # -------------------------------
 for i, row in df.iterrows():
+
+    # Keywords
     try:
         words = ast.literal_eval(row["Representation"])
         keywords = ", ".join(words[:5])
     except:
         keywords = row["Representation"]
 
+    # Representative docs (reviews)
+    try:
+        reviews = ast.literal_eval(row["Representative Docs"])
+    except:
+        reviews = [row["Representative Docs"]]
+
     st.markdown(f"""
     <div class="topic-box">
-        <h3>Topic {i+1}</h3>
+        <h3>Topic {row['Topic']}</h3>
         <p><b>Keywords:</b> {keywords}</p>
         <p><b>Mentions:</b> {row['Count']}</p>
     </div>
     """, unsafe_allow_html=True)
 
+    # Show top reviews
+    st.markdown("**Top Reviews:**")
+
+    for r in reviews[:3]:  # show top 3 reviews
+        st.markdown(f"""
+        <div class="review-box">
+            {r}
+        </div>
+        """, unsafe_allow_html=True)
+
 # -------------------------------
-# Bar Chart
+# Bar chart
 # -------------------------------
 st.subheader("📈 Topic Distribution")
 st.bar_chart(df["Count"])
-
-# -------------------------------
-# Word Cloud Section
-# -------------------------------
-st.markdown("---")
-st.subheader("☁️ Topic Word Clouds")
-
-def generate_wordcloud(words):
-    text = " ".join(words)
-    wc = WordCloud(
-        width=400,
-        height=250,
-        background_color="white",
-        colormap="tab10"
-    ).generate(text)
-
-    fig, ax = plt.subplots()
-    ax.imshow(wc, interpolation="bilinear")
-    ax.axis("off")
-    return fig
-
-# Grid layout (2 columns)
-cols = st.columns(2)
-
-for i, row in df.iterrows():
-    try:
-        words = ast.literal_eval(row["Representation"])
-    except:
-        words = [row["Representation"]]
-
-    with cols[i % 2]:
-        st.markdown(f"### Topic {i+1}")
-        fig = generate_wordcloud(words)
-        st.pyplot(fig)
