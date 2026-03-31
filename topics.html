@@ -1,0 +1,7 @@
+from bertopic import BERTopic
+
+# your trained model
+# model = BERTopic().fit(docs)
+
+fig = model.visualize_topics()
+fig.write_html("topics.html")
